@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        					http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="properties">
+			<bean class="org.apache.commons.configuration.ConfigurationConverter"
+				factory-method="getProperties">
+				<constructor-arg>
+					<bean class="org.apache.commons.configuration.DatabaseConfiguration">
+						<constructor-arg>
+							<ref bean="mySqlDataSource" />
+						</constructor-arg>
+						<constructor-arg value="DATAFLOW_SCHEDULETASKTIMEMODE" />  <!-- 表名 -->
+						<constructor-arg value="model_key" />  <!-- key列名 -->
+						<constructor-arg value="model_val" /> <!-- val列名 -->
+					</bean>
+				</constructor-arg>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="scheduledTasks" class="com.sywu.SpringSchedulerTask.ScheduledTasks01">
+	<constructor-arg index="0" ref="mySqlDataSource">
+	</constructor-arg>
+	</bean>
+
+	<context:component-scan base-package="com.sywu.scheduledTasks" />
+
+	<task:scheduled-tasks scheduler="myScheduler">
+		<!-- <task:scheduled ref="scheduledTasks" method="reportCurrentTime" fixed-delay="5000" 
+			/> <task:scheduled ref="scheduledTasks" method="reportSystemInfo" fixed-delay="6000" 
+			/> <task:scheduled ref="scheduledTasks" method="printData" fixed-delay="7000" 
+			/> -->
+		
+		<task:scheduled ref="scheduledTasks" method="reportCurrentTime"	fixed-delay="${fixed-delay.five}" />
+		<task:scheduled ref="scheduledTasks" method="reportTableData" fixed-delay="${fixed-delay.seven}" />					
+	</task:scheduled-tasks>
+
+	<task:scheduler id="myScheduler" />
+</beans>
